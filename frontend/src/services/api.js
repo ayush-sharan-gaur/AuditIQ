@@ -1,23 +1,31 @@
 // frontend/src/services/api.js
-
 import axios from 'axios';
+
+/**
+ * Create a single Axios instance that:
+ *  • uses your custom REACT_APP_API_URL in production
+ *  • falls back to a relative `/api` path in development
+ */
+const API = axios.create({
+  baseURL: process.env.REACT_APP_API_URL || '',
+});
 
 /**
  * Run a Lighthouse audit for the given URL.
  * @param {string} url
- * @returns {Promise} Axios response with JSON { categories, tips }
+ * @returns {Promise<{ categories: object, tips: string[] }>}
  */
 export function audit(url) {
-  return axios.post('/api/audit', { url });
+  return API.post('/api/audit', { url });
 }
 
 /**
  * Download a PDF audit report for the given URL.
  * @param {string} url
- * @returns {Promise<Blob>} Axios response blob containing the PDF
+ * @returns {Promise<Blob>}
  */
 export function downloadReport(url) {
-  return axios.post(
+  return API.post(
     '/api/report',
     { url },
     { responseType: 'blob' }
@@ -27,10 +35,10 @@ export function downloadReport(url) {
 /**
  * Download a PNG audit report for the given URL.
  * @param {string} url
- * @returns {Promise<Blob>} Axios response blob containing the PNG
+ * @returns {Promise<Blob>}
  */
 export function downloadPng(url) {
-  return axios.post(
+  return API.post(
     '/api/report/png',
     { url },
     { responseType: 'blob' }
@@ -38,15 +46,18 @@ export function downloadPng(url) {
 }
 
 /**
- * Create a Stripe checkout session for a one-off purchase ($25/report)
+ * Create a Stripe checkout session for a one-off purchase ($25/report).
+ * @param {number} [quantity=1]
+ * @returns {Promise<{ sessionId: string }>}
  */
 export function createPurchaseSession(quantity = 1) {
-  return axios.post('/api/checkout/purchase', { quantity });
+  return API.post('/api/checkout/purchase', { quantity });
 }
 
 /**
- * Create a Stripe checkout session for a subscription ($49/month)
+ * Create a Stripe checkout session for a subscription ($49/month).
+ * @returns {Promise<{ sessionId: string }>}
  */
 export function createSubscriptionSession() {
-  return axios.post('/api/checkout/subscribe');
+  return API.post('/api/checkout/subscribe');
 }
