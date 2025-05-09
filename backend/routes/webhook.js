@@ -1,28 +1,25 @@
 // backend/routes/webhook.js
-const express = require('express');
-const Stripe = require('stripe');
 require('dotenv').config();
-
-const router = express.Router();
-const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+const express = require('express');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const { addSession } = require('../utils/store');
+const router = express.Router();
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
 router.post('/', (req, res) => {
-  const signature = req.headers['stripe-signature'];
+  const sig = req.headers['stripe-signature'];
   let event;
 
   try {
-    // Construct the event using the raw body buffer
-    event = stripe.webhooks.constructEvent(req.body, signature, webhookSecret);
+    // req.body is the raw Buffer here
+    event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
   } catch (err) {
     console.error('Webhook signature error:', err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
-  // Handle only the events we care about
   switch (event.type) {
-    case 'checkout.session.completed':
+    case 'checkout.session.completed': {
       const sess = event.data.object;
       console.log('✅ Checkout completed:', sess.id);
       addSession({
@@ -32,17 +29,19 @@ router.post('/', (req, res) => {
         timestamp: new Date().toISOString(),
       });
       break;
-    case 'invoice.paid':
+    }
+    case 'invoice.paid': {
       console.log('✅ Subscription invoice paid');
       break;
-    case 'invoice.payment_failed':
+    }
+    case 'invoice.payment_failed': {
       console.log('❌ Subscription payment failed');
       break;
+    }
     default:
-      // console.log(`Unhandled event type: ${event.type}`);
+      break;
   }
 
-  // Acknowledge receipt of the event
   res.json({ received: true });
 });
 

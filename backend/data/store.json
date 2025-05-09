@@ -4,6 +4,11 @@
       "sessionId": "cs_test_a1yRWCWGgsw2WLOOdSbTzrcukXTEheErzcnq27Bbis0L1C6jf2oHGFvqAr",
       "customer": null,
       "timestamp": "2025-05-09T08:45:56.663Z"
+    },
+    {
+      "sessionId": "cs_test_a13p56C3QCyyiQSeLAhzmUmWkVxFshVS2BBfr3kgiu6AS3HUGKUg8mmK8C",
+      "customer": null,
+      "timestamp": "2025-05-09T10:59:42.286Z"
     }
   ]
 }
