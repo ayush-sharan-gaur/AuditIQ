@@ -6,6 +6,7 @@ require('dotenv').config();
 const router = express.Router();
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+const { addSession } = require('../utils/store');
 
 router.post('/', (req, res) => {
   const signature = req.headers['stripe-signature'];
@@ -22,7 +23,14 @@ router.post('/', (req, res) => {
   // Handle only the events we care about
   switch (event.type) {
     case 'checkout.session.completed':
-      console.log('✅ Checkout completed:', event.data.object.id);
+      const sess = event.data.object;
+      console.log('✅ Checkout completed:', sess.id);
+      addSession({
+        sessionId: sess.id,
+        customer: sess.customer_email || sess.customer,
+        url: sess.metadata.url,
+        timestamp: new Date().toISOString(),
+      });
       break;
     case 'invoice.paid':
       console.log('✅ Subscription invoice paid');

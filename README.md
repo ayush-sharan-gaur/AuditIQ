@@ -12,3 +12,4 @@ AI‑Powered Landing‑Page Auditor
 
 
 http://localhost:3000
+stripe listen --forward-to localhost:3001/webhook

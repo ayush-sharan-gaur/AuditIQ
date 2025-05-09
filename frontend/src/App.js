@@ -1,6 +1,7 @@
 // frontend/src/App.js
 
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   audit,
   downloadReport,
@@ -89,6 +90,9 @@ function App() {
 
   return (
     <div className="container">
+      <div style={{ textAlign: 'right', marginBottom: 'var(--space-md)' }}>
+        <Link to="/history">View Audit History</Link>
+      </div>
       <h1>AuditIQ</h1>
       <form onSubmit={handleSubmit} style={{ marginBottom: 'var(--space-xl)' }}>
         <input
