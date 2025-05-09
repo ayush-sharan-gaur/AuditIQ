@@ -1,45 +1,54 @@
 // backend/utils/lighthouseService.js
 
-// 1) Import Lighthouse (handle ESM vs CJS default export)
-const rawLighthouse = require('lighthouse');
-const lighthouse = typeof rawLighthouse === 'function'
-  ? rawLighthouse
-  : rawLighthouse.lighthouse || rawLighthouse.default || rawLighthouse;
-
 const chromeLauncher = require('chrome-launcher');
 const puppeteer = require('puppeteer');
 
+/**
+ * Run a Lighthouse audit for the given URL.
+ * Uses dynamic import for the ESM-only Lighthouse package.
+ * @param {string} url
+ * @returns {Promise<{categories: Record<string, number>, tips: Array<{id:string,title:string,description:string,score:number}>}>}
+ */
 async function runLighthouse(url) {
-  // Launch Chrome via Puppeteer’s bundled binary
-  const chromeExecutablePath = puppeteer.executablePath();
+  // ① Dynamically import Lighthouse (ESM-only)
+  const { default: lighthouse } = await import('lighthouse');
+
+  // ② Launch Chrome via Puppeteer’s bundled binary
+  const chromePath = puppeteer.executablePath();
   const chrome = await chromeLauncher.launch({
-    chromePath: chromeExecutablePath,
-    chromeFlags: ['--headless', '--no-sandbox']
+    chromePath,
+    chromeFlags: ['--headless', '--no-sandbox', '--disable-gpu'],
   });
 
+  // ③ Configure Lighthouse options
   const options = {
     port: chrome.port,
     output: 'json',
-    onlyCategories: ['performance', 'accessibility', 'seo', 'best-practices']
+    logLevel: 'error',
+    onlyCategories: ['performance', 'accessibility', 'seo', 'best-practices'],
   };
 
-  // Run Lighthouse audit
+  // ④ Run Lighthouse audit
   const runnerResult = await lighthouse(url, options);
+
+  // ⑤ Kill Chrome
   await chrome.kill();
 
-  // Extract scores and actionable tips
-  const categories = runnerResult.lhr.categories;
-  const audits = runnerResult.lhr.audits;
+  // ⑥ Extract scores and actionable tips
+  const { categories, audits } = runnerResult.lhr;
+  const categoryScores = Object.fromEntries(
+    Object.entries(categories).map(([key, cat]) => [key, cat.score])
+  );
   const tips = Object.values(audits)
-    .filter(a => a.score < 1 && a.displayValue)
-    .map(a => ({ title: a.title, description: a.displayValue }));
+    .filter(audit => typeof audit.score === 'number' && audit.score < 1)
+    .map(audit => ({
+      id: audit.id,
+      title: audit.title,
+      description: audit.description,
+      score: audit.score,
+    }));
 
-  return {
-    categories: Object.fromEntries(
-      Object.entries(categories).map(([key, cat]) => [key, cat.score])
-    ),
-    tips
-  };
+  return { categories: categoryScores, tips };
 }
 
 module.exports = { runLighthouse };
