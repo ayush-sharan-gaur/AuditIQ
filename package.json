@@ -2,11 +2,9 @@
   "name": "audit-iq",
   "version": "1.0.0",
   "private": true,
+  "main": "server.js",
   "scripts": {
-    "start": "node backend/index.js"
-  },
-  "engines": {
-    "node": "18.x"
+    "start": "node server.js"
   },
   "dependencies": {
     "express": "^4.18.2",
@@ -15,5 +13,8 @@
     "puppeteer": "^24.8.2",
     "stripe": "^18.1.0",
     "chrome-launcher": "^0.15.0"
+  },
+  "engines": {
+    "node": "18.x"
   }
 }
