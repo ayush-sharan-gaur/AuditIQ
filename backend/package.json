@@ -1,0 +1,16 @@
+{
+    "name": "audit-iq-backend",
+    "version": "1.0.0",
+    "main": "index.js",
+    "scripts": {
+        "start": "node index.js"
+    },
+    "dependencies": {
+        "chrome-launcher": "^0.15.0",
+        "dotenv": "^16.0.3",
+        "express": "^4.18.2",
+        "lighthouse": "^12.6.0",
+        "puppeteer": "^24.8.2",
+        "stripe": "^18.1.0"
+    }
+}
